@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=4.0,minimum-scale=0.1,user-scalable=1"/>
+    <title>chatGpt</title>
+    <link rel="stylesheet" href="https://www.layuicdn.com/layui/css/layui.css" />
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script src="https://cdn.staticfile.org/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://www.layuicdn.com/layui/layui.js"></script>
+    <script src="https://cdn.bootcss.com/fetch/2.0.3/fetch.js"></script>
+
+    <script>
+        //百度统计代码
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?b2aafc7c030584826f7aa9402ce1880f";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+    <style>
+        *{box-sizing: border-box;}
+        .cen {text-align: center;}
+        .layui-colla-content *{font-size: 14px;}
+        .layui-colla-content img{max-width:100%}
+        .layui-colla-content div{line-height: 30px; font-size: 14px;}
+        .layui-nav-item img{width: 30px; height: 30px; border-rAdius: 50%; margin-right: 10px;}
+        .layui-nav-item:nth-child(1) a{padding-left:0px;}
+
+        .setBox {
+            position: fixed; width: 40%; min-height: 60%; background: #fff; left: 30%;
+            border-radius: 10px; overflow: hidden; box-shadow:#999 6px 6px 51px;
+            z-index: 9; padding:15px; box-sizing: border-box;}
+    </style>
+</head>
+<body>
+<div id="app">
+    <div>
+        <div>
+            <div v-if="showBox" class="setBox layui-anim layui-anim-up">
+                <table class="layui-table " lay-skin="nob" lay-even	>
+                    <tr>
+                        <td>
+                            API地址设置：<br>
+                            <input type="text" v-model="apiUrl"  class="layui-input">
+                            <br>
+                            <a class="layui-btn layui-btn-sm" @click="apiUrl='https://yewu.bcwhkj.cn/api/v2.Gptliu/search';alert('已将API地址设为GPT国内API接口地址1')">GPTAPI地址1</a>
+                            <a class="layui-btn layui-btn-sm" @click="apiUrl='https://api.openai-hk.com';alert('已将API地址设为GPT国内API接口地址2')">GPTAPI地址2</a>
+                            <a class="layui-btn layui-btn-sm"  @click="apiUrl='https://api.openai.com/v1/chat/completions';alert('已将API地址设为官方接口地址，请确保你本地环境能正常发起请求')">openai官方API地址</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            token / key设置：<br>
+                            <input type="password" v-model="apiKey"  class="layui-input">
+                            <br>
+                            <a href="https://apifox.com/apidoc/shared-52fb41cb-0e62-4e34-b06d-f9334d7a0502/api-106414419" target="_blank">获取key1</a>
+                            <a href="https://www.openai-hk.com/docs/getting-started.html" target="_blank">获取key2</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Model名称：
+                            <input type="text" v-model="apiModel" class="layui-input">
+                            <br>
+                            <a class="layui-btn layui-btn-sm"  @click="apiModel='gpt-3.5-turbo-1106';">gpt-3.5-turbo-1106</a>
+                            <a class="layui-btn layui-btn-sm"  @click="apiModel='gpt-3.5-turbo';">gpt-3.5-turbo</a>
+                            <a class="layui-btn layui-btn-sm">其他model请查看相关接口文档</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            更多接口：
+                            <a href="https://apifox.com/apidoc/shared-52fb41cb-0e62-4e34-b06d-f9334d7a0502/api-106414419">接口1</a>
+                            <a href="https://www.openai-hk.com/v3/ai">接口2</a>
+                            <a href="https://aigptx.top/settings">接口3</a>
+							。。。
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="cen" style="padding-top: 10px;">
+                            <a @click="save()" class="layui-btn layui-btn-danger">保存并返回</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <table class="layui-table">
+            <tr  class=" layui-anim-up layui-anim" style="display: none;">
+                <td>
+                    <div ><pre style="font-size: 15px; line-height: 26px;  word-break:break-all; white-space:pre-wrap; background: #EEF1FA;padding:5px; float: left;   margin-top: 10px;max-width:80%;">我是人工智能GPT，你有什么要问我的吗？  </pre></div>
+                </td>
+            </tr>
+            <tr v-for="item,key in duiLie"  class=" layui-anim-up layui-anim">
+                <td>
+                    <span style="color: #fff; float: right; background: #8aebf4;border-radius: 15px; padding:5px; font-size: 15px;
+                    line-height: 26px; max-width:80%; " @click="Info.wen=item.cxtitlecn1 ? item.cxtitlecn1 : item.wen"
+                    v-if="item.wen">
+                        {{item.cxtitlecn1 ? item.cxtitlecn1 : item.wen}}
+                    </span>
+                    <div class="layui-clear"></div>
+                    <div  @click="Info.wen=item.wen" @click="copy(item.da)">
+                        <pre v-if="item.da" style="font-size: 15px; line-height: 26px;  word-break:break-all; white-space:pre-wrap; background: #EEF1FA;border-radius: 15px;;padding:5px; float: left; margin-top: 10px;max-width:80%;">{{item.da}}  </pre>
+                    </div>
+                    <table style="width: 100%;border-radius: 15px;" v-if="duiLie.length>1 ">
+                        <tr>
+                            <td style="text-align: right;border:0px; padding:  10px 0;">
+                                <span v-if="key>0 && item.cxaddtime" > <a @click="history=0; Info.wen=item.wen;  Info.cxtitlecn1=item.cxtitlecn1; tiJiaoWenTi(); history=1;" class="layui-btn layui-btn-normal layui-btn-sm">生成其它答案</a></span>
+                                <span style="font-weight:500; color:#999; font-size: 12px;" v-if="item.cxaddtime">[{{item.cxaddtime}}]</span>
+                                <span style="font-weight:500; color:#999;font-size: 12px;" v-if="item.hsTime">[{{item.hsTime}} s]</span>
+                            </td>
+                        </tr>
+                    </table>
+                    <div v-if="tiWenZhong==true && key==((duiLie.length)-1)">
+                        <blockquote class="layui-elem-quote layui-quote-nm">
+                            <span style="color: red;">请等候ChatGPT的回复……<span style="font-weight:500; color:#666;" v-if="that.hsTime>0 && key==(duiLie.length-1)">[ {{that.hsTime}} s]</span><br></span>
+                            <span v-if="that.hsTime>0 && key==(duiLie.length-1) && that.hsTime>40"></span>
+                            Tips：<br>ChatGPT生成的回复主要用于对话生成，涉及数值相关的回复，只可做为参考，不保证数据准确性；<br>
+                            <A @click="location.href=location.href">若长时间未回复，点此刷新页面重新提交；</a><br>
+                        </blockquote>
+                    </div>
+                    <div v-if="item.time>0">
+                        [{{item.time}} 秒后自动重试]
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <div style="height:250px;"></div>
+
+        <table class="layui-table" style="position: fixed;bottom: 0px; left: 0px;width: 100%;margin:0px;">
+            <tr v-if="tiWenZhong==false">
+                <td style="color: green; text-align: right; ">
+                        <span style="float:left; " >
+                           <label>
+                               <input type="checkbox" v-model="lianXu" style="vertical-align:text-bottom">&nbsp;&nbsp;连续对话  <a
+                                   @click="alert('连续对话打勾后。可以在GPT回复后。继续根据当前答案进行提问，类似与人的连续对话一般，但受限于可提交的数据量有限，只能保留最后5条提问的记忆')">[?]</a>					   
+                           </label>
+                        </span>
+					   <li class="layui-nav-item" style="float: left;margin-left: 3%;" @click="showBox=!showBox"><i class="layui-icon layui-icon-slider" ></i> 设置</li>
+						<span  v-if="tiWenZhong==false" style="float: right;" @click="clearList()">[清空当前对话]</span>
+                </td>
+            </tr>
+            <tr v-else>
+                <td>
+                    <a style="width: 100%;" @click="alert('等待GPT回复中……，若时间太久或通讯中断，请刷新页面或再次提交')" class="layui-btn layui-btn-normal" >等候回复中……</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div style="float:left; width: 80%; overflow: hidden;">
+                        <input  style="padding-right: 15px;border-radius: 10px;" class="layui-input" type="text" placeholder="输入您的问题" v-model="Info.wen" @keyup.enter="tiJiaoWenTi()">
+                    </div>
+                    <div style="float:left; width: 20%;  overflow: hidden;">
+                        <a @click="tiJiaoWenTi()" style="width: 100%;border-radius: 10px;"  class="layui-btn layui-btn-normal">提交</a>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+<script>
+
+
+    var that,timer;
+    var app = new Vue({
+        el: '#app',
+        data:{
+            apiKey:'55Hc4rDGTzSKIP5zTI72aHFCTeo7VHG3',
+            apiUrl:'https://yewu.bcwhkj.cn/api/v2.Gptliu/search',
+            apiModel:'gpt-3.5-turbo-1106',
+            bcApiUrl:'https://yewu.bcwhkj.cn/api/v2.',
+            Info:{
+                wen:'',
+                cxtitlecn1:'',
+            },
+            List:[],
+            pageCount:''
+            ,count:''
+            ,search:{
+                page:1,
+                limit:10,
+            },
+            showBox:false,
+            hsTime:0,
+            tiWenZhong:false,
+            duiLie:[
+                {
+                    wen:'',
+                    cxtitlecn1:'',
+                    da:'你好,我是智能GPT，你想问我什么呢？',
+                    cxCount:'',
+                    time:0,
+                    cxaddtime:'',
+                    hsTime:0,
+                }
+            ],
+            curDuiLie:0,
+            lianXu:false,
+            history:1,
+
+        },
+        mounted () {
+            that = this;
+            if(that.getQV('key')){
+                that.apiKey=that.getQV('key');
+                localStorage.token=that.apiKey;
+            }
+            if(localStorage.token){
+                that.apiKey=localStorage.token;
+            }
+
+        },
+        methods: {
+            save(){
+                console.log('保存')
+                localStorage.token=that.apiKey;
+                that.showBox=!that.showBox;
+            },
+
+            tiJiaoWenTi(){
+                if(that.tiWenZhong==true){
+                    layer.msg('当前有问题进行中……，请稍候再提交');
+                    return false;
+                }
+                console.log('触发提交问题！');
+                if(that.Info.wen){
+                    //移到页面最下面
+                    $("html,body").animate({scrollTop:"9999999px"},1800);
+
+                    that.tiWenZhong=true;
+                    that.duiLie.push({
+                        wen:that.Info.wen,
+                        cxtitlecn1:that.Info.cxtitlecn1,
+                        da:'',
+                        cxCount:'loading……',
+                        hsTime:0,
+                    })
+
+                    let postD={
+                        keyword:that.Info.wen
+                        ,cxtitlecn1:that.Info.cxtitlecn1 ? that.Info.cxtitlecn1 : that.Info.wen
+                        ,token:localStorage.token
+                        ,history:that.history
+                    }
+                    let  lastNo=that.duiLie.length-1;
+
+                    //启用连续对话
+                    if(that.lianXu && that.duiLie.length>1){
+                        postD.keyword='';
+                        postD.keyword= postD.keyword + 'Q: 请你后续所有回复请优先用中文做答 A: 好的。 <|endoftext|>';
+                        postD.keyword= postD.keyword + ' Q: '+that.duiLie[0].wen + ' A: '+that.duiLie[0].da+'。 <|endoftext|>';
+                        that.duiLie.forEach((v,k)=>{
+                            //限制只提交最近的5个回合内的对话内容提交，以防太长无法提交
+                            if(k<lastNo && ((lastNo-k)<=5) && v.wen && k>0){
+                                postD.keyword= postD.keyword + ' Q: '+v.wen + ' A: '+v.da+'。 <|endoftext|>';
+                            }
+                        })
+                        postD.keyword=postD.keyword+' Q: '+that.Info.wen + ' A: ';
+                    }
+
+                    //开始计时
+                    timers = setInterval(() => {that.hsTime++;},1000);
+
+                    //替换掉连续对话时的一些换行符
+                    postD.keyword=postD.keyword.replace(/\//g,'');
+
+                    that.liuTiJiao(lastNo,postD.keyword,0);
+                }
+            },
+
+            getQV(variable)//获取get参数
+            {
+                //获取get参数
+                var getV;
+                var query = window.location.search.substring(1);
+                var vars = query.split("&");
+                for (var i=0;i<vars.length;i++) {
+                    var pair = vars[i].split("=");
+                    if(pair[0] == variable){
+                        getV=decodeURI(pair[1]);
+                        return decodeURI(pair[1]);
+                    }
+                }
+                return(false);
+            },
+
+            //sse  fetch   Post
+            liuTiJiao(lastNo,keys,cid){
+                let openaiId='';
+                var postData = JSON.stringify({
+                    model: that.apiModel,
+                    messages: [{role: 'user', content: keys}],
+                    stream:true
+                });
+                var headerss={
+                    'Content-Type': 'application/json',
+                    'Authorization':'Bearer '+that.apiKey
+                };
+
+                console.log('提交的数据：',postData)
+                fetch(that.apiUrl,{
+                    method:'post',
+                    headers:headerss,
+                    body:postData
+                }).then(function(response) {
+                    //console.log('返回的全部数据：',response);
+                    let end=setInterval(function(){},1000); for(let i=1; i<=end;i++){clearInterval(i);}
+                    $("html,body").animate({scrollTop:"9999999px"},1800);
+                    that.hsTime=0;
+
+                    let reader = response.body.getReader()
+
+                    let pump = () => {
+                        return reader.read().then(({ value, done }) => {
+                            if (done) {
+                                console.log('完成')
+
+                                that.Info.wen='';
+                                that.Info.cxtitlecn1='';
+                                that.tiWenZhong=false;
+                                return false;
+                            }
+                            let s=that.Utf8ArrayToStr(value);
+                            console.log(s);
+                            try{
+                                let returnD=JSON.parse(s);
+                                if(returnD.codes==203 || returnD.codes==300 || returnD.codes==900 ){
+                                    alert(returnD.mess);
+                                    that.reSets();
+                                    return false;
+                                }
+                            }catch(e){
+                                //console.log('返回内容无JSON格式，可能是流式内容，继续执行')
+                            }
+                            //let s=value;
+                            let q=s.substr(6,s.length)
+                            q=q.replace(/data\: /g,',')
+                            q=q.replace(/\[DONE\]/g,'{}')
+                            q='['+q+']';
+
+                            try{
+                                let qq=JSON.parse(q);
+                                qq.forEach((v,k)=>{
+                                    if(v.id){
+                                        openaiId=v.id;
+                                    }
+                                    if(v.choices){
+                                        //console.log(v.choices[0].delta.content)
+                                        if(v.choices[0].delta.content){
+                                            setTimeout(()=>{
+                                                that.duiLie[lastNo].da+=v.choices[0].delta.content;
+                                            });
+                                        }
+                                    }else{
+                                        console.log('解析完成')
+                                        that.Info.wen='';
+                                        that.Info.cxtitlecn1='';
+                                        that.tiWenZhong=false;
+                                    }
+                                })
+                            }catch (e) {
+                                console.log('sse中断了')
+                                that.Info.wen='';
+                                that.Info.cxtitlecn1='';
+                                that.tiWenZhong=false;
+                            }
+                            return pump()
+                        })
+                    }
+                    pump()
+                }).catch(function(err){
+                    console.log("Fetch错误:",err);
+                })
+            },
+
+            Utf8ArrayToStr:function(array) {
+                var out, i, len, c;
+                var char2, char3;
+
+                out = "";
+                len = array.length;
+                i = 0;
+                while(i < len) {
+                    c = array[i++];
+                    switch(c >> 4)
+                    {
+                        case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+                        // 0xxxxxxx
+                        out += String.fromCharCode(c);
+                        break;
+                        case 12: case 13:
+                        // 110x xxxx   10xx xxxx
+                        char2 = array[i++];
+                        out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
+                        break;
+                        case 14:
+                            // 1110 xxxx  10xx xxxx  10xx xxxx
+                            char2 = array[i++];
+                            char3 = array[i++];
+                            out += String.fromCharCode(((c & 0x0F) << 12) |
+                                ((char2 & 0x3F) << 6) |
+                                ((char3 & 0x3F) << 0));
+                            break;
+                    }
+                }
+
+                return out;
+            },
+
+            //替换掉所有换行符
+            removeNewlines(str) {
+                return str.replace(/(\r\n|\n|\r)/gm, "");
+            },
+            // 文字逐个出现（本地伪逐字输出）
+            printCharByChar(str,lastNo) {
+                for (let i = 0; i < str.length; i++) {
+                    setTimeout(() => {
+                        //console.log(str[i]);
+                        that.duiLie[lastNo].da+= str[i];
+                    }, i * 40);
+                }
+            },
+            clearList(){
+                that.duiLie.splice(0,that.duiLie.length);
+            },
+            /**
+             * @return post请求方法
+             */
+            PostUrl(urls, postData,callback,title='') {
+                // if(postData.token){
+                //     postData.token=kimi(postData.token);
+                // }
+                let start = new Date().getTime()
+
+                axios.post(urls, postData)
+                    .then(function (res) {
+                        let data = res.data;
+                        let end = new Date().getTime();
+                        let useTime =end - start;
+                        console.log('%cPostReturn - '+ title,'background-color:green;padding:3px;color:#fff',data,'PostUrl:'+urls,'PostData',postData,'计时:',useTime,' ms');
+                        callback(data);
+
+                    })
+                    .catch(function (error) {
+                        let end = new Date().getTime();
+                        let useTime =end - start;
+                        console.log('%cError PostReturn - '+ title,'background-color:green;padding:3px;color:#fff',error,'PostUrl:'+urls,'PostData',postData,'计时:',useTime,' ms');
+                        callback(error);
+                    });
+            },
+            /**
+             * @return 当前时间
+             */
+            Now(){
+                return moment().get('year')+'-'+
+                    (moment().get('month')+1)+'-'+
+                    moment().get('date')+' '+
+                    moment().get('hour')+':'+
+                    moment().get('minute')+':'+
+                    moment().get('second');
+            },
+        }
+    });
+</script>
+</body>
+</html>

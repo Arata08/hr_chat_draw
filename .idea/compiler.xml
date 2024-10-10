@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="HrSystem" />
+        <module name="javasedemo" />
+        <module name="chat-openai" />
+        <module name="chat" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="chatgpt-stream-main" target="17" />
+      <module name="project" target="17" />
+      <module name="Send" target="17" />
+      <module name="SendDemo" target="1.8" />
+      <module name="springBoot" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="HrSystem" options="-parameters" />
+      <module name="chat" options="-parameters" />
+      <module name="chat-openai" options="-parameters" />
+      <module name="chatgpt-stream-main" options="-parameters" />
+      <module name="springBoot" options="-parameters" />
+    </option>
+  </component>
+</project>

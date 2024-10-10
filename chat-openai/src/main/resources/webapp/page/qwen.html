@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/layui.css" />
+    <title>chat</title>
+    <style>
+        .answer{
+          position: relative;
+          height: 95vh;
+		  width: 90%;
+		  margin-left:4%;
+        }
+    
+        .ipt{
+          display:flex;
+          align-items: center;
+          position: absolute;
+          bottom: 0px;
+          margin: 0 40px;
+          padding-right: 15px;
+          border-radius: 15px;
+          width: calc(100% - 30px);
+          height: 50px;
+        }
+        .ipt textarea {
+          resize: none;
+          overflow-y: auto;
+          border: none;
+          box-shadow: none;
+        }
+        .ipt textarea:focus{
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        #chatWindow {
+          max-height: calc(100vh - 120px);
+          height:auto;
+          overflow-y: auto;
+        }
+    
+        .message-bubble {
+            padding: 10px;
+            margin: 5px;
+            display: flex;
+            align-items: flex-start;
+            border-bottom: 1px dashed #e7eaec;
+        }
+    
+    
+        .message-bubble p {
+            font-size: 18px;
+            margin-left:15px;
+        }
+    
+        .chat-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 3px;
+        }
+
+        .layui-colla-content img{max-width:100%}
+        .layui-colla-content div{line-height: 30px; font-size: 14px;}
+        .layui-nav-item img{width: 30px; height: 30px; border-rAdius: 50%; margin-right: 10px;}
+        .layui-nav-item:nth-child(1) a{padding-left:0px;}
+
+    </style>
+</head>
+<body>
+      <div class="">
+            <div class="answer">
+              <div id="chatWindow"></div>
+              <div class="input-group ipt">
+                  <div style="float:left; width: 80%; overflow: hidden;">
+                      <input  style="padding-right: 15px;border-radius: 10px;" class="layui-input" type="text" placeholder="输入您的问题" id="chatInput">
+                  </div>
+                  <div style="float:left; width: 20%;  overflow: hidden;">
+                      <a @click="tiJiaoWenTi()" style="width: 100%;border-radius: 10px;" id="chatBtn"  class="layui-btn layui-btn-normal">提交</a>
+                  </div>
+              </div>
+            </div>
+          </div>
+      </div>
+</body>
+<script src="../static/js/jquery-2.1.1.js"></script>
+<script src="../static/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+        var chatBtn = $('#chatBtn');
+        var chatInput = $('#chatInput');
+        var chatWindow = $('#chatWindow');
+        var userIcon = '../static/images/user.png'
+        var botIcon = '../static/images/Tongyi-Qianwen.png';
+        
+
+        // 添加用户消息到窗口
+        function addUserMessage(message) {
+          var messageElement = $('<div class="row message-bubble"><img class="chat-icon" src="' + userIcon + '"><p class="message-text">' + message + '</p></div>');
+          chatWindow.append(messageElement);
+          chatInput.val('');
+          chatWindow.animate({ scrollTop: chatWindow.prop('scrollHeight') }, 500);
+        }
+
+        // 添加回复消息到窗口
+        function addBotMessage(message) {
+          var messageElement = $('<div class="row message-bubble"><img class="chat-icon" src="' + botIcon + '"><p class="message-text">' + message + '</p></div>');
+          chatWindow.append(messageElement);
+          chatInput.val('');
+          chatWindow.animate({ scrollTop: chatWindow.prop('scrollHeight') }, 500);
+        }
+
+        // 处理用户输入
+        chatBtn.click(function() {
+          var message = chatInput.val();
+          if (message.length == 0){
+            common_ops.alert("请输入内容！")    
+            return  
+          }
+          addUserMessage(message);
+
+          // messages.push({"role": "user", "content": message})
+          
+          chatBtn.attr('disabled',true) // 消息发送后让提交按钮不可点击
+
+          // 发送信息到后台
+          $.ajax({
+            url: '../ai/ollama',
+            method: 'POST',
+            data: {
+              "msg": JSON.stringify(message)
+            },
+            success: function(res) {
+              addBotMessage(res);
+              chatBtn.attr('disabled',false)  // 成功接受消息后让提交按钮再次可以点击
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+              addBotMessage('<span style="color:red;">' + '出错啦！请稍后再试!' + '</span>');
+              chatBtn.attr('disabled',false) 
+            }
+          });
+        });
+
+        // 处理 Enter 键按下
+        chatInput.keypress(function(e) {
+          if (e.which == 13) {
+            chatBtn.click();
+          }
+        });
+  });
+</script>
+</html>

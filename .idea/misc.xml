@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/javasedemo/pom.xml" />
+        <option value="$PROJECT_DIR$/SendDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/project/pom.xml" />
+        <option value="$PROJECT_DIR$/Send/pom.xml" />
+        <option value="$PROJECT_DIR$/springBoot/pom.xml" />
+        <option value="$PROJECT_DIR$/HrSystem/pom.xml" />
+        <option value="$PROJECT_DIR$/SpringBoot_chat/pom.xml" />
+        <option value="$PROJECT_DIR$/chat-openai/pom.xml" />
+        <option value="$PROJECT_DIR$/chatgpt-stream-main/pom.xml" />
+        <option value="$PROJECT_DIR$/chat-qwen/pom.xml" />
+      </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/Send/pom.xml" />
+        <option value="$PROJECT_DIR$/SendDemo/pom.xml" />
+        <option value="$PROJECT_DIR$/chatgpt-stream-main/pom.xml" />
+        <option value="$PROJECT_DIR$/project/pom.xml" />
+        <option value="$PROJECT_DIR$/springBoot/pom.xml" />
+      </set>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" project-jdk-name="17" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>

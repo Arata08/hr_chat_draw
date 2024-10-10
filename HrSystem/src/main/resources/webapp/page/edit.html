@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="../static/js/jquery-3.7.0.min.js"></script>
+		<link href="../static/bootstrap-5.3.0/css/bootstrap.min.css" rel="stylesheet"
+			integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+		<title>Document</title>
+		<style>
+			html {
+				height: 100%;
+			}
+
+			body {
+				height: 70%;
+			}
+
+			.login-wrapper {
+				background-color: #fff;
+				width: 450px;
+				height: 480px;
+				border-radius: 15px;
+				padding: 0 40px;
+				position: relative;
+				left: 50%;
+				top: 60%;
+				transform: translate(-50%, -50%);
+			}
+
+			.header {
+				font-size: 38px;
+				font-weight: bold;
+				text-align: center;
+			}
+
+			.btn {
+				text-align: center;
+				width: 100%;
+				margin-top: 20px;
+				background-image: linear-gradient(to right, #55ff7f, #aaffff);
+				color: #fff;
+			}
+
+			a {
+				text-decoration-line: none;
+				color: #abc1ee;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="login-wrapper">
+			<div class="header">修改信息</div>
+			<div class="form-wrapper">
+				<div class="input-group flex-nowrap" style="margin-top: 20px;">
+					<span class="input-group-text">账号</span>
+					<input type="text" id="username" class="form-control" placeholder="Username"
+						aria-describedby="addon-wrapping">
+				</div>
+				<div class="input-group flex-nowrap" style="margin-top: 20px;">
+					<span class="input-group-text">密码</span>
+					<input type="password" id="password" class="form-control" placeholder="Password"
+						aria-describedby="addon-wrapping">
+				</div>
+				<div class="input-group flex-nowrap" style="margin-top: 20px;">
+					<span class="input-group-text">确认密码</span>
+					<input type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password"
+						aria-describedby="addon-wrapping">
+				</div>
+				<span id="passwordMatchMsg" style="color: red;"></span>
+				<div class="input-group flex-nowrap" style="margin-top: 20px;">
+					<span class="input-group-text">年龄</span>
+					<input type="text" id="age" class="form-control" placeholder="年龄" aria-describedby="addon-wrapping">
+				</div>
+				<div class="input-group flex-nowrap" style="margin-top: 20px;">
+					<span class="input-group-text">性别</span>
+					<input type="text" id="sex" class="form-control" placeholder="man/woman"
+						aria-describedby="addon-wrapping">
+				</div>
+				<div class="input-group flex-nowrap" style="margin-top: 20px;">
+					<span class="input-group-text">是否离职</span>
+					<input type="text" id="isdel" class="form-control" placeholder="1表示离职/0表示在职"
+						aria-describedby="addon-wrapping">
+				</div>
+				<button id="registerBtn" class="btn" style="width: 100%;">修改</button>
+			</div>
+		</div>
+
+		<script>
+			$(document).ready(function() {
+				const urlParams = new URLSearchParams(window.location.search);
+				const id = urlParams.get('id');
+				const username = urlParams.get('username');
+				const usersex = urlParams.get('usersex');
+				const userage = urlParams.get('userage');
+				const isdel = urlParams.get('isdel');
+				// 填充表单数据
+				$('#username').val(username);
+				$('#sex').val(usersex);
+				$('#age').val(userage);
+				$('#isdel').val(isdel);
+				console.log(username);
+				$('#confirmPassword').blur(function() {
+					var password = $('#password').val();
+					var confirmPassword = $('#confirmPassword').val();
+					if (password === confirmPassword) {
+						$('#passwordMatchMsg').text('');
+					}
+				});
+
+				$('#registerBtn').click(function() {
+					var password = $('#password').val();
+					var confirmPassword = $('#confirmPassword').val();
+					if (password !== confirmPassword) {
+						$('#passwordMatchMsg').text('密码不匹配，请重新输入');
+						return;
+					}
+
+					if ($('#username').val() !== '' && password !== '') {
+						$.ajax({
+							url: '../user/updateById', // 后端处理注册的接口地址
+							type: 'POST',
+							dataType: 'json',
+							data: {
+								id: id,
+								username: $('#username').val(),
+								userpwd: password,
+								userage: $('#age').val(),
+								usersex: $('#sex').val(),
+								isdel: $('#isdel').val()
+							},
+							success: function(response) {
+								if (response == 1) {
+									alert('修改成功！');
+									window.location.href = 'list.html';
+								} else {
+									alert('修改失败！用户名及密码与其他用户的重复！');
+								}
+							},
+							error: function(xhr, status, error) {
+								// 注册失败的处理
+								console.log(error);
+								alert('修改失败: ' + error);
+							}
+						});
+					} else {
+						alert('用户名和密码不能为空！');
+					}
+				});
+			});
+		</script>
+
+	</body>
+</html>

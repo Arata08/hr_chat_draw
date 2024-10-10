@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>User Table</title>
+		<link rel="stylesheet" href="../static/css/style.css">
+		<link href="//unpkg.com/layui@2.9.13/dist/css/layui.css" rel="stylesheet">
+	</head>
+	<style>
+		h2,
+		div {
+			display: inline-block;
+		}
+
+		h2 {
+			margin-right: 1250px;
+		}
+
+		body {
+			margin: 20px;
+			/* 设置页面周围的间距为 20px */
+		}
+	</style>
+	<body>
+		<div style="display: flex; justify-content: space-between;">
+			<h2 style="display: inline-block; margin-right: 10px;">员工列表</h2>
+			<div style="display: inline-block;">
+				<div align="right">
+					<button class="layui-btn demo-dropdown-base">
+						<span id="queryType">查询方式</span>
+						<i class="layui-icon layui-icon-down layui-font-12"></i>
+					</button>
+					<input style="height: 32px; padding-bottom: 0.2%; margin-left: 10px;" id="idInput" />
+					<button type="button" class="layui-btn layui-btn-primary" lay-on="page" onclick="searchEmployee()"
+						style="margin-left: 10px;">查找</button>
+					<button type="button" class="layui-btn layui-btn-primary" lay-on="test-page"
+						style="margin-left: 10px;" id="addEmployeeBtn">增加员工</button>
+				</div>
+			</div>
+		</div>
+		<table id="userTable">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>姓名</th>
+					<th>密码</th>
+					<th>性别</th>
+					<th>年龄</th>
+					<th>是否辞职</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+		<div id="demo-laypage-pn-hide"></div>
+	</body>
+	<script src="//unpkg.com/layui@2.9.13/dist/layui.js"></script>
+	<script src="../static/js/jquery-3.7.0.min.js"></script>
+	<script>
+		// 在顶部定义一个变量用于存储当前选择的查询方式，默认为空
+		var queryType = "";
+		layui.use(function() {
+			var dropdown = layui.dropdown;
+			// 渲染
+			dropdown.render({
+				elem: '.demo-dropdown-base', // 绑定元素选择器，此处指向 class 可同时绑定多个元素
+				data: [{
+					title: 'ID',
+					id: 'id'
+				}, {
+					title: '姓名',
+					id: 'name'
+				}],
+				click: function(obj) {
+					this.elem.find('span').text(obj.title);
+					queryType = obj.id;
+					console.log(obj.id);
+				}
+			});
+		});
+		var pageNow = 1;
+		var pageSize = 11;
+
+		$(document).ready(function() {
+			loadData(pageNow, pageSize);
+		});
+
+		function loadData(pageNow, pageSize) {
+			console.log(pageNow);
+			$.ajax({
+				url: '../user/getUserList',
+				type: 'GET',
+				data: { 'pageNow': pageNow, 'pageSize': pageSize },
+				dataType: 'json',headers: {
+					'Content-Type': 'application/json'
+				},
+				success: function(response) {
+					renderTable(response.content);
+					renderPagination(response.pageNow, response.pageSize, response.total);
+				},
+				error: function(xhr, status, error) {
+					console.log('加载失败: ' + error);
+				}
+			});
+		}
+
+		function renderTable(data) {
+			// 注册成功的处理
+			// 渲染用户列表到表格中
+			var tbody = $('#userTable').find('tbody');
+			tbody.empty();//清除后再添加
+			$.each(data, function(index, user) {
+				var row = $('<tr>');
+				row.append($('<td>').text(user.id));
+				row.append($('<td>').text(user.username));
+				row.append($('<td>').text(user.userpwd));
+				row.append($('<td>').text(user.usersex));
+				row.append($('<td>').text(user.userage));
+				if (user.isdel == "1") {
+					row.append($('<td>').text("是"));
+				} else {
+					row.append($('<td>').text("还没"));
+				}
+				row.append($('<td>').html([
+					'<button onclick="showPopup(\'delete\', ' + user.id +
+					')">删除</button>',
+					'<button onclick="showPopup(\'edit\', ' + user.id +
+					', \'',
+					encodeURIComponent(user.username), '\', \'',
+					encodeURIComponent(user.usersex), '\', ',
+					user.userage, ', \'', user.isdel, '\')">编辑</button>'
+				].join('')));
+				$('tbody').append(row);
+				tbody.append(row);
+			});
+		}
+
+		function renderPagination(pageNow, pageSize, total) {
+			layui.use(['laypage'], function(){
+				var laypage = layui.laypage;
+
+				// 定义一个用于加载数据的函数，便于在laypage的回调中调用
+				function loadPageData(newPage, newLimit) {
+					pageNow = newPage; // 更新当前页码
+					pageSize = newLimit; // 更新每页条数
+					//console.log(pageNow);
+					loadData(pageNow, pageSize); // 重新加载数据
+				}
+
+				// 普通用法，增加jump和limits回调
+				laypage.render({
+					elem: 'demo-laypage-pn-hide',
+					count: total, // 数据总数
+					curr: pageNow,
+					limit: pageSize,
+					limits: [10, 20, 30], // 可选择的每页显示数量
+					layout: ['prev', 'page', 'next', 'limit'],
+					jump: function(obj, first){ // 第一次不执行
+						if (!first) { // 如果不是初次加载
+							loadPageData(obj.curr, obj.limit); // 根据回调的当前页和每页数量加载数据
+						}
+					}
+				});
+			});
+		}
+
+		function showPopup(action, id, username, usersex, userage, isdel) {
+			if (action === 'delete') {
+				// AJAX 请求删除数据
+				$.ajax({
+					type: 'GET',
+					url: '../user/deleteById',
+					dataType: 'json',
+					data: {
+						id: id
+					}, // 传递要删除的数据的 ID
+					success: function(response) {
+						if (response.success) { // 假设服务器返回的 JSON 包含一个 success 属性
+							// 删除成功后，移除对应行
+							$('#userTable tbody tr').each(function() {
+								if ($(this).find('td:first').text() === id) {
+									$(this).remove(); // 移除对应行
+									alert('数据删除成功');
+									return false; // 结束循环
+								}
+							});
+						} else {
+							alert('删除失败');
+						}
+					},
+					error: function(xhr, status, error) {
+						alert('删除请求失败: ' + error);
+					}
+				});
+			} else if (action === 'edit') {
+				// 编辑功能
+				console.log(id,username, usersex, userage);
+				window.location.href = 'edit.html?id=' + id +'&username=' + encodeURIComponent(username) +
+						'&usersex=' + encodeURIComponent(usersex) +
+						'&userage=' + encodeURIComponent(userage) +
+						'&isdel=' + encodeURIComponent(isdel);
+			}
+		}
+
+		// 查找员工操作
+		function searchEmployee() {
+			const inputValue = $('input#idInput').val(); // 获取用户输入的内容
+			console.log(queryType);
+			if (queryType == "") {
+				alert("请选择查询方式");
+			} else {
+				console.log(inputValue);
+				const url = '../user/getBy' + queryType;
+				console.log(url);
+				$.ajax({
+					type: 'POST',
+					url: url,
+					dataType: 'json',
+					data: {
+						value: inputValue
+					},
+					success: function(response) {
+						if (response != "") {
+							var tbody = $('#userTable').find('tbody');
+							tbody.empty();
+
+							$.each(response, function(index, user) {
+								var row = $('<tr>');
+								row.append($('<td>').text(user.id));
+								row.append($('<td>').text(user.username));
+								row.append($('<td>').text(user.userpwd));
+								row.append($('<td>').text(user.usersex));
+								row.append($('<td>').text(user.userage));
+								if (user.isdel == "1") {
+									row.append($('<td>').text("是"));
+								} else {
+									row.append($('<td>').text("还没"));
+								}
+								// 假设 row 是一个已经存在的 jQuery 对象，代表表格的一行
+								row.append($('<td>').html(`
+									<button onclick="showPopup('delete', ${user.id})">删除</button>
+									<button onclick="showPopup('edit', ${user.id}, '${encodeURIComponent(user.username)}', '${encodeURIComponent(user.usersex)}', ${user.userage}, ${user.isdel})">编辑</button>
+								`));
+								$('tbody').append(row);
+								tbody.append(row);
+							});
+							alert('员工查找成功');
+						} else {
+							alert('未找到对应员工');
+						}
+					},
+				});
+			}
+		}
+
+		layui.use(['layer', 'form'], function() {
+			var layer = layui.layer;
+			var form = layui.form;
+
+			// 弹出添加员工的弹窗
+			function openAddEmployeeDialog() {
+				var popupContent = `
+            <div class="layui-form">
+            <div class="layui-form-item">
+                <label class="layui-form-label">姓名</label>
+                <div class="layui-input-block">
+                    <input type="text" id="newUsername" name="username" lay-verify="required" placeholder="请输入姓名" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">密码</label>
+                <div class="layui-input-block">
+                    <input type="password" id="newUserPwd" name="userpwd" lay-verify="required" placeholder="请输入密码" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">年龄</label>
+                <div class="layui-input-block">
+                    <input type="number" id="newUserAge" name="userage" lay-verify="required" placeholder="请输入年龄" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">性别</label>
+                <div class="layui-input-block">
+                    <input type="text" id="newUserSex" name="usersex" lay-verify="required" placeholder="请输入性别" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <button class="layui-btn" lay-submit lay-filter="addEmployee">确认</button>
+            </div>
+        </div>
+        `;
+				layer.open({
+					type: 1,
+					title: '添加员工(拖动这里移动窗口)',
+					content: popupContent,
+					success: function(layer, index) {
+						// 初始化表单
+						form.render();
+
+						// 绑定表单提交事件
+						form.on('submit(addEmployee)', function(data) {
+							// 获取表单数据
+							const formData = data.field;
+							console.log(formData);
+
+							// 发起Ajax请求
+							$.ajax({
+								url: '../user/register', // 换成实际的后端接口地址
+								type: 'POST', // 或者其他请求类型如'GET'
+								data: formData, // 直接从layui的form模块获取的数据
+								dataType: 'json', // 假设后端返回JSON格式数据
+								success: function(response) {
+									if (response == 1) {
+										alert('添加成功！');
+										// 清除表单中的输入值
+										$("#newUsername").val("");
+										$("#newUserPwd").val("");
+										$("#newUserAge").val("");
+										$("#newUserSex").val("");
+									} else {
+										alert('添加失败！用户名和密码重复！');
+									}
+								},
+								error: function(xhr, status, error) {
+									alert('请求错误，请检查网络或联系管理员！');
+								}
+							});
+
+							// 阻止表单的默认提交行为
+							return false; // 这行应放在Ajax请求之后，或者直接删除，因为lay-submit默认不会让表单提交
+						});
+					}
+				});
+			}
+			// 页面加载完成后，绑定按钮点击事件
+			$(document).ready(function() {
+				$("#addEmployeeBtn").click(openAddEmployeeDialog);
+			});
+		});
+	</script>
+</html>

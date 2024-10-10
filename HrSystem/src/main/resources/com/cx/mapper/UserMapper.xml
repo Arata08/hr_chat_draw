@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cx.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.cx.domain.User">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="username" column="username" jdbcType="VARCHAR"/>
+            <result property="userpwd" column="userpwd" jdbcType="VARCHAR"/>
+            <result property="userage" column="userage" jdbcType="INTEGER"/>
+            <result property="usersex" column="usersex" jdbcType="VARCHAR"/>
+            <result property="isdel" column="isdel" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,username,userpwd,
+        userage,usersex,isdel
+    </sql>
+
+    <select id="login" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from user
+        where username = #{username,jdbcType=VARCHAR} and userpwd = #{userpwd,jdbcType=VARCHAR}
+    </select>
+
+    <select id="queryAllInfo" resultType="com.cx.domain.User">
+        select * from user
+    </select>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from user
+        where  id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <select id="getByIName" resultType="com.cx.domain.User">
+        select
+        <include refid="Base_Column_List" />
+        from user
+        where  username = #{username,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getOrderInfoList" resultType="com.cx.domain.User">
+        select * from user
+    </select>
+
+    <select id="countTotal" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from user
+        where  id = #{id,jdbcType=INTEGER} 
+    </delete>
+
+    <insert id="register" keyColumn="id" keyProperty="id" parameterType="com.cx.domain.User" useGeneratedKeys="false">
+        insert into user
+        (username,userpwd
+        ,userage,usersex
+        )
+        values (#{username,jdbcType=VARCHAR},#{userpwd,jdbcType=VARCHAR}
+        ,#{userage,jdbcType=INTEGER},#{usersex,jdbcType=VARCHAR}
+        )
+    </insert>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.cx.domain.User" useGeneratedKeys="true">
+        insert into user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">id,</if>
+                <if test="username != null">username,</if>
+                <if test="userpwd != null">userpwd,</if>
+                <if test="userage != null">userage,</if>
+                <if test="usersex != null">usersex,</if>
+                <if test="isdel != null">isdel,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">#{id,jdbcType=INTEGER},</if>
+                <if test="username != null">#{username,jdbcType=VARCHAR},</if>
+                <if test="userpwd != null">#{userpwd,jdbcType=VARCHAR},</if>
+                <if test="userage != null">#{userage,jdbcType=INTEGER},</if>
+                <if test="usersex != null">#{usersex,jdbcType=VARCHAR},</if>
+                <if test="isdel != null">#{isdel,jdbcType=TINYINT},</if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.cx.domain.User">
+        update user
+        <set>
+                <if test="username != null">
+                    username = #{username,jdbcType=VARCHAR},
+                </if>
+                <if test="userpwd != null">
+                    userpwd = #{userpwd,jdbcType=VARCHAR},
+                </if>
+                <if test="userage != null">
+                    userage = #{userage,jdbcType=INTEGER},
+                </if>
+                <if test="usersex != null">
+                    usersex = #{usersex,jdbcType=VARCHAR},
+                </if>
+                <if test="isdel != null">
+                    isdel = #{isdel,jdbcType=TINYINT},
+                </if>
+        </set>
+        where   id = #{id,jdbcType=INTEGER} 
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.cx.domain.User">
+        update user
+        set 
+            username =  #{username,jdbcType=VARCHAR},
+            userpwd =  #{userpwd,jdbcType=VARCHAR},
+            userage =  #{userage,jdbcType=INTEGER},
+            usersex =  #{usersex,jdbcType=VARCHAR},
+            isdel =  #{isdel,jdbcType=TINYINT}
+        where   id = #{id,jdbcType=INTEGER} 
+    </update>
+</mapper>

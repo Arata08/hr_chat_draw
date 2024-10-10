@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="../static/js/jquery-3.7.0.min.js"></script>
+		<link href="../static/bootstrap-5.3.0/css/bootstrap.min.css" rel="stylesheet"
+			integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+		<title>Document</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
+
+			html {
+				height: 100%;
+			}
+
+			body {
+				height: 100%;
+				background-image: linear-gradient(to right, #fbc2eb, #a6c1ee);
+			}
+
+			.container {
+				height: 100%;
+			}
+
+			.login-wrapper {
+				background-color: #fff;
+				width: 450px;
+				height: 618px;
+				border-radius: 15px;
+				padding: 0 50px;
+				position: relative;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+			}
+
+			.header {
+				font-size: 38px;
+				font-weight: bold;
+				text-align: center;
+				line-height: 200px;
+			}
+
+			.btn {
+				text-align: center;
+				padding: 10px;
+				width: 100%;
+				margin-top: 20px;
+				background-image: linear-gradient(to right, #a6c1ee, #fbc2eb);
+				color: #fff;
+			}
+
+			.msg {
+				text-align: center;
+				line-height: 88px;
+			}
+
+			a {
+				text-decoration-line: none;
+				color: #abc1ee;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="login-wrapper">
+				<div class="header">Sign up</div>
+				<div class="form-wrapper">
+					<div class="input-group flex-nowrap">
+						<span class="input-group-text">账号</span>
+						<input type="text" id="username" class="form-control" placeholder="Username"
+							aria-describedby="addon-wrapping">
+					</div>
+					<div class="input-group flex-nowrap" style="margin-top: 20px;">
+						<span class="input-group-text">密码</span>
+						<input type="password" id="password" class="form-control" placeholder="Password"
+							aria-describedby="addon-wrapping">
+					</div>
+					<div class="input-group flex-nowrap" style="margin-top: 20px;">
+						<span class="input-group-text">确认密码</span>
+						<input type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password"
+							aria-describedby="addon-wrapping">
+					</div>
+					<span id="passwordMatchMsg" style="color: red;"></span>
+					<div class="input-group flex-nowrap" style="margin-top: 20px;">
+						<span class="input-group-text">年龄</span>
+						<input type="text" id="age" class="form-control" placeholder="Age"
+							aria-describedby="addon-wrapping">
+					</div>
+					<div class="input-group flex-nowrap" style="margin-top: 20px;">
+						<span class="input-group-text">性别</span>
+						<input type="text" id="sex" class="form-control" placeholder="Sex"
+							aria-describedby="addon-wrapping">
+					</div>
+					<button id="registerBtn" class="btn" style="width: 100%;">注册</button>
+				</div>
+				<div class="msg">
+					有账号了??
+					<a href="../login.html">去登录</a>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			$(document).ready(function() {
+				$('#confirmPassword').blur(function() {
+					var password = $('#password').val();
+					var confirmPassword = $('#confirmPassword').val();
+					if (password === confirmPassword) {
+						$('#passwordMatchMsg').text('');
+					}
+				});
+
+				$('#registerBtn').click(function() {
+					var password = $('#password').val();
+					var confirmPassword = $('#confirmPassword').val();
+					if (password !== confirmPassword) {
+						$('#passwordMatchMsg').text('密码不匹配，请重新输入');
+						return;
+					}
+
+					if ($('#username').val() !== '' && password !== '') {
+						$.ajax({
+							url: '../user/register', // 后端处理注册的接口地址
+							type: 'POST',
+							dataType: 'json',
+							data: {
+								username: $('#username').val(),
+								userpwd: password,
+								userage: $('#age').val(),
+								usersex: $('#sex').val()
+							},
+							success: function(response) {
+								if (response == 1) {
+									alert('注册成功！');
+									window.location.href = '../login.html';
+								} else {
+									alert('注册失败！用户名和密码重复！');
+								}
+							},
+							error: function(xhr, status, error) {
+								// 注册失败的处理
+								console.log(error);
+								alert('注册失败: ' + error);
+							}
+						});
+					} else {
+						alert('用户名和密码不能为空！');
+					}
+				});
+			});
+		</script>
+
+	</body>
+</html>

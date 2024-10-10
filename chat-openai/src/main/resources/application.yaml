@@ -1,0 +1,33 @@
+spring:
+  ai:
+    openai:
+      api-key: hk-1psovl10000366896c9dd533eabee60169c285a812a70a9c
+      #api-key: ${OPENAI_API_KEY}
+      base-url: https://api.openai-hk.com
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: qwen2:0.5b
+  web:
+    resources:
+      static-locations: classpath:/webapp/
+server:
+  port: 8090
+  servlet:
+    context-path: /
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
